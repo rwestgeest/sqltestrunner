@@ -3,6 +3,7 @@ require "sqltestrunner/version"
 class SqlTestRunner
   def initialize(sql_test_runner, step_logger = nil)
     @stands = {}
+    @before_blocks = []
     @sql_test_runner = sql_test_runner
     @step_logger = step_logger
   end
@@ -19,6 +20,10 @@ class SqlTestRunner
   def add_stand(number, stand)
     stands[number] = [] unless stands[number]
     stands[number] << stand
+  end
+
+  def before(description = "",  &block)
+    @before_blocks << BeforeAction.new(description, block)
   end
 
   def test_case(name, &block)
@@ -38,15 +43,23 @@ class SqlTestRunner
     end
   end
 
+  class BeforeAction < Struct.new(:description, :block)
+    def run(sql_test_runner, step_logger)
+      step_logger.log_before_block(description)
+      sql_test_runner.instance_eval(&block) 
+    end
+  end
+
   private
   def run_stands
+    before_blocks.each { |before_block| before_block.run(sql_test_runner, step_logger) }
     stands.keys.sort.each do |key|
       stands[key].each do |stand|
         stand.run(sql_test_runner, step_logger)
       end
     end
   end
-  attr_reader :sql_test_runner, :step_logger, :stands
+  attr_reader :sql_test_runner, :step_logger, :stands, :before_blocks
 end
 
 class ReportingStepLogger 
