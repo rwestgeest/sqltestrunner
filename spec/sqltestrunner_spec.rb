@@ -5,24 +5,7 @@ describe SqlTestRunner do
   let(:step_logger) { mock('step_logger', :log_step => nil) }
   let(:runner) { SqlTestRunner.new(sql_connection, step_logger) }
 
-  describe "logging while running stand blocks" do
-    let(:event_logger) { mock('event_logger') }
-
-    it "logs step" do
-      step_logger.should_receive(:log_step).with(0, "name")
-      runner.run %Q{ test_case("name") { stand 0 } }
-    end
-    it "logs steps for different test cases" do
-      step_logger.should_receive(:log_step).with(0, "name").ordered
-      step_logger.should_receive(:log_step).with(0, "other").ordered
-      runner.run %Q{ 
-        test_case("name") { stand 0 } 
-        test_case("other") { stand 0 } 
-      }
-    end
-  end
-
-  describe "running stand blocks" do
+  describe "test cases" do
     let(:sql_connection) { mock('connection') }
 
     it "runs a stand block" do
@@ -36,7 +19,7 @@ describe SqlTestRunner do
       }
     end
 
-    it "runs stand blocks of same key in order" do
+    it "runs stand blocks of different test cases and same key in order" do
       sql_connection.should_receive(:execute).with("first query of stand 0").ordered
       sql_connection.should_receive(:execute).with("second query of stand 0").ordered
       runner.run %Q{
@@ -89,4 +72,22 @@ describe SqlTestRunner do
       }
     end
   end
+
+  describe "logging while running stand blocks" do
+    let(:event_logger) { mock('event_logger') }
+
+    it "logs step" do
+      step_logger.should_receive(:log_step).with(0, "name")
+      runner.run %Q{ test_case("name") { stand 0 } }
+    end
+    it "logs steps for different test cases" do
+      step_logger.should_receive(:log_step).with(0, "name").ordered
+      step_logger.should_receive(:log_step).with(0, "other").ordered
+      runner.run %Q{ 
+        test_case("name") { stand 0 } 
+        test_case("other") { stand 0 } 
+      }
+    end
+  end
+
 end

@@ -8,8 +8,12 @@ class SqlTestRunner
   end
 
   def run test_description
-    instance_eval test_description
+    load_tests test_description
     run_stands
+  end
+
+  def load_tests(test_description)
+    instance_eval test_description
   end
 
   def add_stand(number, stand)
@@ -43,4 +47,10 @@ class SqlTestRunner
     end
   end
   attr_reader :sql_test_runner, :step_logger, :stands
+end
+
+class ReportingStepLogger 
+  def log_step(step, test_case)
+    puts "running stand #{step} for #{test_case}"
+  end
 end
