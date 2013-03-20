@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+$: << File.expand_path('../lib', File.dirname(__FILE__))
+require 'optparse'
+require 'ostruct'
+require 'sql_test_runner'
+require 'sqlite_connection'
+
+PARSE_ERROR  = 255
+RUNNER_ERROR = 254
+CONNECTION_ERROR = 253
+
+module SqlTestRunner
+  database_options = OpenStruct.new(:database => 'sqlite', :connection => ':memory:')
+
+  option_parser = OptionParser.new do |opts|
+    opts.banner = "Usage #{__FILE__} [options] scriptfile"
+
+    opts.on("-d", "--database [databasetype]", "use database type (default sqlite)") do |database|
+      database_options.database = database
+    end
+    opts.on("-c", "--connection [connection]", "use database connection (default :memory:)") do |connection|
+      database_options.connection = connection
+    end
+
+    opts.on_tail("-h", "--help", "Show this message") do
+      puts opts
+      exit(PARSE_ERROR)
+    end
+  end
+  option_parser.parse!
+
+  file = ARGV.first
+
+  if file.nil? 
+    puts option_parser 
+    exit(PARSE_ERROR) 
+  end
+
+  begin
+    runner = Runner.new(SqliteConnection.new(database_options.connection), TestResult.new(ReportingStepLogger.new))
+    runner.run_file(file)
+  rescue ConnectionError => e
+    puts e.message
+    exit(CONNECTION_ERROR)
+  rescue Exception => e
+    puts e.message
+    exit(RUNNER_ERROR)
+  end
+end
