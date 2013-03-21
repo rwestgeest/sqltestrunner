@@ -14,7 +14,6 @@ Gem::Specification.new do |gem|
   Specifically it runs blocks of testcases ordered by 'stand' blocks.
 
   }
-  gem.homepage      = "--none--"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

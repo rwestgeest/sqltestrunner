@@ -1,4 +1,4 @@
-before do
+before "creating the person table" do
   execute %Q{
     CREATE TABLE IF NOT EXISTS Person(
       Id INTEGER PRIMARY KEY,
@@ -21,7 +21,7 @@ test_case "create a person" do
     }).should == [
       [1, 'Gijs', 'Heerlen']
     ]
-    
+
   end
 end
 
