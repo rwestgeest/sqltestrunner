@@ -18,7 +18,7 @@ module SqlTestRunner
     end
 
     def run(test_description)
-      load_tests test_description
+      load_tests(test_description)
       run_stands
       step_logger.log_results
     end
